@@ -4,9 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+/// <summary>
+/// Тесты для сервиса музыкального маркетплейса
+/// </summary>
 public class MusicMarketplaceServiceTests
 {
-    // Тестовые данные
+    /// <summary>
+    /// Тестовые данные продуктов
+    /// </summary>
     private readonly List<Product> _testProducts = new()
     {
         new Product { Id = 1, Format = AudioFormat.Vinyl, IsSold = true, Artist = "Pink Floyd", Price = 100 },
@@ -15,29 +20,42 @@ public class MusicMarketplaceServiceTests
         new Product { Id = 4, Format = AudioFormat.Cassette, IsSold = true, Artist = "Nirvana", Price = 30 }
     };
 
+    /// <summary>
+    /// Тестовые данные продавцов
+    /// </summary>
     private readonly List<Seller> _testSellers = new()
     {
         new Seller { Id = 1, ShopName = "Vinyl Shop" },
         new Seller { Id = 2, ShopName = "CD Paradise" }
     };
 
+    /// <summary>
+    /// Тестовые данные покупателей
+    /// </summary>
     private readonly List<Buyer> _testBuyers = new()
     {
         new Buyer { Id = 1, FullName = "John Doe" },
         new Buyer { Id = 2, FullName = "Jane Smith" }
     };
 
+    /// <summary>
+    /// Тестовые данные о покупках
+    /// </summary>
     private readonly List<PurchaseRecord> _testPurchases = new()
     {
         new PurchaseRecord { Id = 1, ProductId = 1, BuyerId = 1, PurchaseDate = DateTime.UtcNow.AddDays(-1), TotalPrice = 110 },
         new PurchaseRecord { Id = 2, ProductId = 3, BuyerId = 2, PurchaseDate = DateTime.UtcNow.AddDays(-10), TotalPrice = 60 }
     };
 
-    // Тест: Получение проданных виниловых пластинок
+    /// <summary>
+    /// Тест получения проданных виниловых пластинок
+    /// </summary>
     [Fact]
     public async Task GetSoldVinylsAsync_ReturnsOnlySoldVinyls()
     {
-        // Arrange
+        /// <summary>
+        /// Подготовка тестовых данных
+        /// </summary>
         var stubRepo = new StubProductRepository(_testProducts);
         var service = new MusicMarketplaceService(
             stubRepo,
@@ -45,19 +63,27 @@ public class MusicMarketplaceServiceTests
             new StubBuyerRepository(_testBuyers),
             new StubPurchaseRepository(_testPurchases));
 
-        // Act
+        /// <summary>
+        /// Выполнение тестируемого метода
+        /// </summary>
         var result = await service.GetSoldVinylsAsync();
 
-        // Assert
+        /// <summary>
+        /// Проверка результатов
+        /// </summary>
         Assert.Single(result);
         Assert.All(result, p => Assert.True(p.Format == AudioFormat.Vinyl && p.IsSold));
     }
 
-    // Тест: Получение товаров продавца, отсортированных по цене
+    /// <summary>
+    /// Тест получения товаров продавца, отсортированных по цене
+    /// </summary>
     [Fact]
     public async Task GetProductsBySellerAsync_ReturnsOrderedByPrice()
     {
-        // Arrange
+        /// <summary>
+        /// Подготовка тестовых данных
+        /// </summary>
         var testProducts = new List<Product>
         {
             new Product { Id = 1, SellerId = 1, Price = 100 },
@@ -72,20 +98,28 @@ public class MusicMarketplaceServiceTests
             new StubBuyerRepository(_testBuyers),
             new StubPurchaseRepository(_testPurchases));
 
-        // Act
+        /// <summary>
+        /// Выполнение тестируемого метода
+        /// </summary>
         var result = (await service.GetProductsBySellerAsync(1)).ToList();
 
-        // Assert
+        /// <summary>
+        /// Проверка результатов
+        /// </summary>
         Assert.Equal(2, result.Count);
         Assert.Equal(50, result[0].Price);
         Assert.Equal(100, result[1].Price);
     }
-   
-        // Тест: Топ-5 покупателей по средней стоимости покупок
+
+    /// <summary>
+    /// Тест получения топ-5 покупателей по средней стоимости покупок
+    /// </summary>
     [Fact]
     public async Task GetTopBuyersByAveragePurchaseAsync_ReturnsOrderedResults()
     {
-        // Arrange
+        /// <summary>
+        /// Подготовка тестовых данных
+        /// </summary>
         var testPurchases = new List<PurchaseRecord>
         {
             new PurchaseRecord { BuyerId = 1, TotalPrice = 100 },
@@ -99,20 +133,28 @@ public class MusicMarketplaceServiceTests
             new StubBuyerRepository(_testBuyers),
             new StubPurchaseRepository(testPurchases));
 
-        // Act
+        /// <summary>
+        /// Выполнение тестируемого метода
+        /// </summary>
         var result = (await service.GetTopBuyersByAveragePurchaseAsync()).ToList();
 
-        // Assert
+        /// <summary>
+        /// Проверка результатов
+        /// </summary>
         Assert.Equal(2, result.Count);
         Assert.Equal(1, result[0].Id); // Средняя покупка 150
         Assert.Equal(2, result[1].Id);  // Средняя покупка 50
     }
 
-    // Тест: Статистика продаж за последние 2 недели
+    /// <summary>
+    /// Тест получения статистики продаж за последние 2 недели
+    /// </summary>
     [Fact]
     public async Task GetSellerSalesStatsLastTwoWeeksAsync_ReturnsCorrectCounts()
     {
-        // Arrange
+        /// <summary>
+        /// Подготовка тестовых данных
+        /// </summary>
         var testPurchases = new List<PurchaseRecord>
         {
             new PurchaseRecord
@@ -138,17 +180,23 @@ public class MusicMarketplaceServiceTests
             new StubBuyerRepository(_testBuyers),
             new StubPurchaseRepository(testPurchases));
 
-        // Act
+        /// <summary>
+        /// Выполнение тестируемого метода
+        /// </summary>
         var result = await service.GetSellerSalesStatsLastTwoWeeksAsync();
 
-        // Assert
+        /// <summary>
+        /// Проверка результатов
+        /// </summary>
         Assert.Equal(2, result.Count);
         Assert.Equal(2, result[_testSellers[0]]); // 2 продажи
         Assert.Equal(0, result[_testSellers[1]]); // 0 продаж
     }
 }
 
-// Заглушки для репозиториев
+/// <summary>
+/// Заглушка для репозитория продуктов
+/// </summary>
 public class StubProductRepository : IProductRepository
 {
     private readonly List<Product> _products;
@@ -181,6 +229,9 @@ public class StubProductRepository : IProductRepository
     }
 }
 
+/// <summary>
+/// Заглушка для репозитория продавцов
+/// </summary>
 public class StubSellerRepository : ISellerRepository
 {
     private readonly List<Seller> _sellers;
@@ -205,6 +256,9 @@ public class StubSellerRepository : ISellerRepository
     }
 }
 
+/// <summary>
+/// Заглушка для репозитория покупателей
+/// </summary>
 public class StubBuyerRepository : IBuyerRepository
 {
     private readonly List<Buyer> _buyers;
@@ -224,6 +278,9 @@ public class StubBuyerRepository : IBuyerRepository
     }
 }
 
+/// <summary>
+/// Заглушка для репозитория записей о покупках
+/// </summary>
 public class StubPurchaseRepository : IPurchaseRecordRepository
 {
     private readonly List<PurchaseRecord> _purchases;

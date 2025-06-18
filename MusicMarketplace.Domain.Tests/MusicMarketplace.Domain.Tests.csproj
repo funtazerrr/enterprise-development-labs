@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MusicMarketplace\MusicMarketplace.csproj" />
+    <ProjectReference Include="..\MusicMarketplace\MusicMarketplace.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>
